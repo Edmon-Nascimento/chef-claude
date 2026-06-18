@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
   const client = new InferenceClient(key)
   const output = await client.textGeneration({
-    model: "mistralai/Mistral-7B-Instruct-v0.3",
+    model: "HuggingFaceH4/zephyr-7b-beta" ,
     inputs: prompt + ingredients.join(", "),
     provider: "hf-inference"
   })
