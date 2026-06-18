@@ -7,15 +7,19 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" })
   }
 
-  const { ingredients } = req.body
-  const key = process.env.HF_API_KEY
+  try {
+    const { ingredients } = req.body
+    const key = process.env.HF_API_KEY
 
-  const client = new InferenceClient(key)
-  const output = await client.textGeneration({
-    model: "HuggingFaceH4/zephyr-7b-beta" ,
-    inputs: prompt + ingredients.join(", "),
-    provider: "hf-inference"
-  })
+    const client = new InferenceClient(key)
+    const output = await client.textGeneration({
+      model: "HuggingFaceH4/zephyr-7b-beta",
+      inputs: prompt + ingredients.join(", "),
+      provider: "hf-inference"
+    })
 
-  return res.status(200).json(output)
+    return res.status(200).json(output)
+  } catch (error) {
+    return res.status(500).json({ error: error.message })
+  }
 }
