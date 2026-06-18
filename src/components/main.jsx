@@ -30,9 +30,7 @@ export default function Main() {
       </form>
 
       {ingredients.length > 0 && <Ingredients ingredientsList={ingredients} setRecipe={setRecipe}/>}
-      {recipe && (
-        recipe[0].generated_text
-      )}
+      {recipe && <p className="whitespace-pre-wrap mt-6">{recipe}</p>}
     </section>
   );
 }

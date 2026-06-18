@@ -18,8 +18,9 @@ export default async function handler(req, res) {
       provider: "hf-inference"
     })
 
-    return res.status(200).json(output)
+    return res.status(200).json({ generated_text: output.generated_text })
   } catch (error) {
+    console.error("ERRO:", error.message)
     return res.status(500).json({ error: error.message })
   }
 }
