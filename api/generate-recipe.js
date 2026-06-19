@@ -1,4 +1,18 @@
-const prompt = "Aja como um chef de cozinha experiente, criativo e focado em evitar o desperdício de alimentos. Vou te fornecer uma lista de ingredientes que tenho disponíveis na minha geladeira e despensa. Com base neles, crie uma receita prática e saborosa seguindo as diretrizes abaixo: 1. **Prioridade de Ingredientes:** Utilize prioritariamente os ingredientes da lista. Você pode incluir itens básicos de despensa que a maioria das pessoas tem em casa (como sal, pimenta, óleo/azeite, água, alho e cebola). Se precisar de algo fora disso, sinalize como Opcional ou Substituível. 2. **Grau de Complexidade:** Mantenha a receita simples/média, focando em preparos práticos para o dia a dia. 3. **Estrutura da Resposta:** Apresente o resultado no seguinte formato: - **Nome da Receita:** Um nome atraente. - **Tempo de Preparo:** Estimativa em minutos.- **Rendimento:** Quantas porções rende aproximadamente. - **Ingredientes Utilizados:** Lista clara com as quantidades sugeridas.- **Modo de Preparo:** Passo a passo simplificado e em tópicos. - **Dica do Chef:** Uma sugestão de substituição, variação ou toque especial para elevar o prato. Aqui estão os meus ingredientes:"
+const PROMPT =
+  "Você é um chef de cozinha experiente. Responda SEMPRE em português do Brasil (pt-BR). " +
+  "Com base nos ingredientes fornecidos, crie uma receita prática e saborosa. " +
+  "Use ingredientes básicos de despensa (sal, pimenta, azeite, alho, cebola) se necessário. " +
+  "Responda EXATAMENTE neste formato markdown, sem texto antes ou depois:\n\n" +
+  "## [Nome da Receita]\n\n" +
+  "**Tempo de preparo:** X minutos | **Rendimento:** X porções\n\n" +
+  "## Ingredientes\n\n" +
+  "- quantidade + ingrediente\n\n" +
+  "## Modo de Preparo\n\n" +
+  "1. Primeiro passo\n" +
+  "2. Segundo passo\n\n" +
+  "## Dica do Chef\n\n" +
+  "Uma dica especial.\n\n" +
+  "Ingredientes disponíveis:"
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -7,22 +21,22 @@ export default async function handler(req, res) {
 
   try {
     const { ingredients } = req.body
-    const key = process.env.HF_API_KEY
 
     const response = await fetch(
-      "https://router.huggingface.co/hf-inference/models/meta-llama/Llama-3.2-3B-Instruct/v1/chat/completions",
+      "https://router.huggingface.co/v1/chat/completions",
       {
         method: "POST",
         headers: {
-          "Authorization": "Bearer " + key,
+          "Authorization": `Bearer ${process.env.HF_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "meta-llama/Llama-3.2-3B-Instruct",
+          model: "mistralai/Mistral-7B-Instruct-v0.2:featherless-ai",
           messages: [
-            { role: "user", content: prompt + ingredients.join(", ") }
+            { role: "system", content: PROMPT },
+            { role: "user", content: ingredients.join(", ") },
           ],
-          max_tokens: 1000
+          stream: false,
         }),
       }
     )
@@ -30,7 +44,6 @@ export default async function handler(req, res) {
     const data = await response.json()
     const text = data.choices[0].message.content
     return res.status(200).json({ generated_text: text })
-
   } catch (error) {
     console.error("ERRO:", error.message)
     return res.status(500).json({ error: error.message })
